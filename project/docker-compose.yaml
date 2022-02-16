@@ -16,15 +16,15 @@ services:
     build: ./backend
     container_name: project-backend
     ports:
-      - 3002:8080
+      - 8080:8080
     links:
       - mongo
 
   frontend:
     build: ./frontend
-    container_name: frontend
+    container_name: project-frontend
     ports:
-      - 3001:80
+      - 3000:3000
     links:
       - backend
 
