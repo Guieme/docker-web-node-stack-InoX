@@ -3,31 +3,45 @@ version: '3'
 services:
   mongo:
     image: mongo:5.0.0
+    container_name: mongo
     restart: always
     volumes: 
       - 'my-app:/data/db'
-    ports:
-      - 27017:27017
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: example
+    networks:
+      - backend
 
   backend:
     build: ./backend
     container_name: project-backend
     ports:
       - 8080:8080
+    environment:
+      - MONGO_URI=mongodb://mongo:27017
     links:
       - mongo
+    depends_on:
+      - mongo
+    networks:
+      - frontend
+      - backend
 
   frontend:
     build: ./frontend
     container_name: project-frontend
     ports:
-      - 3000:3000
-    links:
-      - backend
+      - 80:3000
+    networks:
+      - frontend
 
 
 volumes:
   my-app:
+
+networks:
+  frontend:
+    driver: bridge
+  backend:
+    driver: bridge

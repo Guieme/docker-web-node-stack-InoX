@@ -9,11 +9,9 @@ ENV PATH /app/node_modules/.bin:$PATH
 
 # install app dependencies
 COPY package.json ./
-COPY yarn.lock ./
 RUN npm install --silent
-RUN npm audit fix
+# RUN npm audit fix
 
 COPY . .
 
-EXPOSE 8080
 CMD [ "npm", "start" ]
