@@ -1,14 +1,6 @@
-# pull official node image
-FROM alpine as base
+# pull official base image
+FROM node:13.12.0-alpine
 
-RUN apt install nodejs npm
-
-FROM base as yarn-base
-#Yarn packages installer
-RUN corepack enable
-RUN yarn set version stable
-
-FROM yarn-base
 # set working directory
 WORKDIR /app
 
