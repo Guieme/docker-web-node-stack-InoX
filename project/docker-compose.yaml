@@ -1,25 +1,26 @@
 version: '3'
 
 services:
+  # Service mongo avec une politique de redémarrage spécifique
+  # permettant le redémarrage auto du service en cas d'arrêt. 
   mongo:
     image: mongo:5.0.0
     container_name: mongo
     restart: always
     volumes: 
       - 'my-app:/data/db'
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: example
     networks:
       - backend
 
+  # Service node avec variable d'environnement pour joindre la base de donnée
+  # mappage avec le port 8080 de la machine hôte
   backend:
     build: ./backend
     container_name: project-backend
     ports:
       - "8080:8080"
     environment:
-      - MONGO_URI=mongodb://mongo:27017
+      - MONGO_URI=mongodb://mongo:27017/dbdev
     links:
       - mongo
     depends_on:
@@ -28,6 +29,8 @@ services:
       - frontend
       - backend
 
+  # Service react
+  # mappage avec le port 80 de la machine hôte
   frontend:
     build: ./frontend
     container_name: project-frontend
@@ -36,10 +39,16 @@ services:
     networks:
       - frontend
 
-
+# Volume permettant la persistance des données au dela du cycle de vie des conteneurs
 volumes:
   my-app:
 
+# deux réseau :
+  # backend est lié à mongo et à l'api
+  # front end est lié à l'api et à l'application react
+  
+# le tout permettant d'isoler la base de donnée, qui ne sera accessible que par l'api 
+# et ne sera exposée ni aux autre conteneurs ni à un port de la machine hôte
 networks:
   frontend:
     driver: bridge
