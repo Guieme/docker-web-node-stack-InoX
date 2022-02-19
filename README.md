@@ -5,6 +5,8 @@ L'application est simple et peu interessante en elle-même, le projet se concent
 
 ---
 
+
+
 ## DockerFiles
 
 Vous trouverez dans les dépot ./frontend et ./backend deux dockerfiles identiques :
@@ -25,6 +27,8 @@ CMD [ "yarn", "run", "start" ]
 ```
 
 ce Dockerfile permettra de copier ces fichiers dans une image docker, d'installer toutes les dépendences de l'application e de la démarrer au moment du lancement du conteneur.
+
+
 
 ---
 
@@ -49,12 +53,8 @@ services:
   backend:
     build: ./backend
     container_name: project-backend
-    ports:
-      - "8080:8080"
     environment:
       - MONGO_URI=mongodb://mongo:27017/dbdev
-    links:
-      - mongo
     depends_on:
       - mongo
     networks:
@@ -64,10 +64,19 @@ services:
   frontend:
     build: ./frontend
     container_name: project-frontend
-    ports:
-      - "80:3000"
     networks:
       - frontend
+  
+    proxy: 
+    image: nginx:latest
+    container_name: reverse-proxy
+    volumes:
+      - ./config/nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - 80:80
+    networks:
+      - frontend
+      - backend
 
 volumes:
   my-app:
@@ -79,12 +88,53 @@ networks:
     driver: bridge
 ```
 
+
+
+---
+
+## Reverse proxy
+
+l'un des conteneur mis en place est sur une image nginx. il agit en tant que proxy inverse, autrement dit, il va permettre de rediriger les flux vers les conteneurs selon le type de requête qu'il recoit en entrée sur le port 80. 
+
+cela permet l'ouverture d'un seul port, à savoir le port 80, et de pouvoir tout de même accéder aux conteneurs backend et front end.
+
+ces rêgles de redirections sont définies dans le fichier ./config/nginx.conf : 
+
+```conf
+events{
+
+}
+http {
+  server {
+    server_name localhost;
+
+    location / {
+      proxy_pass http://frontend:3000;
+    }
+
+    location /api/ {
+      proxy_pass http://backend:8080;
+      rewrite ^/api(.*)$ $1 break;
+    }
+  }
+}
+```
+\
+\ 
+  
+  
+---
+
 ## Architecture projet
 
 l'architecture se contruit donc comme suit :
 
 ![Alt text](./project_achitecture.png "a title")
 
+
+
+
+---
 
 ## Procédure de lancement
 

@@ -1,6 +1,9 @@
 # Téléchargement de l'image officielle node sur base alpine
 FROM node:13.12.0-alpine
 
+# Mise à jour des paquets alpine
+RUN apk update && apk upgrade
+
 # Initialiser le répertoire de l'application
 WORKDIR /app
 

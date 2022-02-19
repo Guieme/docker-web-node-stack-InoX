@@ -17,12 +17,8 @@ services:
   backend:
     build: ./backend
     container_name: project-backend
-    ports:
-      - "8080:8080"
     environment:
       - MONGO_URI=mongodb://mongo:27017/dbdev
-    links:
-      - mongo
     depends_on:
       - mongo
     networks:
@@ -34,10 +30,19 @@ services:
   frontend:
     build: ./frontend
     container_name: project-frontend
-    ports:
-      - "80:3000"
     networks:
       - frontend
+
+  proxy: 
+    image: nginx:latest
+    container_name: reverse-proxy
+    volumes:
+      - ./config/nginx.conf:/etc/nginx/nginx.conf
+    ports:
+      - 80:80
+    networks:
+      - frontend
+      - backend
 
 # Volume permettant la persistance des données au dela du cycle de vie des conteneurs
 volumes:
