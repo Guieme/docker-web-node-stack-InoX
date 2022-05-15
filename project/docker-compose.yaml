@@ -1,61 +1,41 @@
 version: '3'
 
 services:
-  # Service mongo avec une politique de redémarrage spécifique
-  # permettant le redémarrage auto du service en cas d'arrêt. 
-  mongo:
-    image: mongo:5.0.0
+
+  # Service React défini sur le port 3000 de la pachine
+  frontend:
+    build: ./frontend
+    container_name: react-app
+    ports:
+      - 3000:3000
+
+  # Service mongo
+  mongodb:
+    image: mongo:latest
     container_name: mongo
-    restart: always
     volumes: 
-      - 'my-app:/data/db'
+      - 'mongo-data:/data/db'
     networks:
       - backend
 
-  # Service node avec variable d'environnement pour joindre la base de donnée
-  # mappage avec le port 8080 de la machine hôte
+  # Service NodeJS avec une variable d'environnement pour interagir avec MongoDB
   backend:
     build: ./backend
-    container_name: project-backend
+    container_name: nodejs
     environment:
       - MONGO_URI=mongodb://mongo:27017/dbdev
     depends_on:
-      - mongo
+      - mongodb
     networks:
-      - frontend
       - backend
-
-  # Service react
-  # mappage avec le port 80 de la machine hôte
-  frontend:
-    build: ./frontend
-    container_name: project-frontend
-    networks:
-      - frontend
-
-  proxy: 
-    image: nginx:latest
-    container_name: reverse-proxy
-    volumes:
-      - ./config/nginx.conf:/etc/nginx/nginx.conf
     ports:
-      - 80:80
-    networks:
-      - frontend
-      - backend
+      - 8080:8080
 
-# Volume permettant la persistance des données au dela du cycle de vie des conteneurs
+
+# Volume permettant la persistance des données
 volumes:
-  my-app:
+  mongo-data:
 
-# deux réseau :
-  # backend est lié à mongo et à l'api
-  # front end est lié à l'api et à l'application react
-  
-# le tout permettant d'isoler la base de donnée, qui ne sera accessible que par l'api 
-# et ne sera exposée ni aux autre conteneurs ni à un port de la machine hôte
 networks:
-  frontend:
-    driver: bridge
   backend:
     driver: bridge

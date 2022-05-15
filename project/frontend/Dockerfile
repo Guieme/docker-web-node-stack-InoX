@@ -1,23 +1,17 @@
-# Téléchargement de l'image officielle node sur base alpine
+# Téléchargement de l'image
 FROM node:13.12.0-alpine
-
-# Mise à jour des paquets alpine
 RUN apk update && apk upgrade
 
-# Initialiser le répertoire de l'application
+# Initialisation répertoire de l'application
 WORKDIR /app
 
-# Ajout de la variable d'environnement pour les modules node
+# Ajout variable d'environnement
 ENV PATH /app/node_modules/.bin:$PATH
 
-# Installation des dépendences
+# Installation dépendences
 COPY package.json .
-COPY yarn.lock .
-
 RUN yarn install
 
-# Copie des fichiers du projet
+# Copie fichiers du projet
 COPY . .
-
-# Commande au lancement du conteneur
 CMD [ "yarn", "run", "start" ]
